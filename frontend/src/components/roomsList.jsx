@@ -1,4 +1,5 @@
 import { useEffect,useRef } from "react";
+import './roomsList.css';
 
 function RoomsList({ rooms, onRoomSelect, selectedRoom, searchCriteria, onBookRoom }) {
   if (!rooms.length) return <p>No rooms found.</p>;
@@ -26,7 +27,7 @@ function RoomsList({ rooms, onRoomSelect, selectedRoom, searchCriteria, onBookRo
   return (
     <div className="rooms-container">
       <div className="rooms-list">
-        <h2>Available Rooms</h2>
+        <h2 className="available-label">Available Rooms</h2>
         {rooms.map(room => (
           <div key={room.room_id} className="room-item">
             <div className="room-info">

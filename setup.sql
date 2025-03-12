@@ -19,7 +19,7 @@ CREATE TABLE users (
     name VARCHAR(100) NOT NULL,
     email VARCHAR(100) NOT NULL UNIQUE,
     department_id INT,
-    role VARCHAR(20) NOT NULL  -- 'admin', 'faculty', 'club_fic', etc.
+    role VARCHAR(20) NOT NULL  -- 'admin', 'user'.
 );
 
 -- Bookings table

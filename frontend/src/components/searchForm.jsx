@@ -22,43 +22,83 @@ function SearchForm({ onSearch }) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="search-form">
-      <div className="form-group">
-        <input
-          type="date"
-          placeholder='Choose date'
-          value={date}
-          onChange={(e)=>setDate(e.target.value)}
-          required
-        />
-      </div>
+    <form onSubmit={handleSubmit} className="search-form" style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+  <div className="form-group" style={{ position: 'relative' }}>
+  <input
+    type="date"
+    value={date}
+    onChange={(e)=>setDate(e.target.value)}
+    required
+    style={{
+      width: '100%',
+        padding: '8px',
+        borderRadius: '4px',
+        border: '1px solid #ccc',
+        height: '38px',
+        boxSizing: 'border-box',
+      zIndex: 1
+    }}
+    onClick={(e) => {
+      e.currentTarget.showPicker && e.currentTarget.showPicker();
+    }}
+  />
+</div>
 
-      <div className="form-group">
-        <select
-          value={timeSlot}
-          onChange={(e)=>setTimeSlot(e.target.value)}
-          required
-        >
-          <option value="">Select Time Slot</option>
-          {timeSlots.map(slot=>(
-            <option key={slot.id} value={slot.id}>
-              {slot.text}
-            </option>
-          ))}
-        </select>
-      </div>
+  <div className="form-group">
+    <select
+      value={timeSlot}
+      onChange={(e)=>setTimeSlot(e.target.value)}
+      required
+      style={{
+        width: '100%',
+        padding: '8px',
+        borderRadius: '4px',
+        border: '1px solid #ccc',
+        height: '38px',
+        boxSizing: 'border-box'
+      }}
+    >
+      <option value="">Select Time Slot</option>
+      {timeSlots.map(slot=>(
+        <option key={slot.id} value={slot.id}>
+          {slot.text}
+        </option>
+      ))}
+    </select>
+  </div>
 
-      <div className="form-group">
-        <input
-          type="number"
-          placeholder="Minimum Capacity"
-          value={capacity}
-          onChange={(e) => setCapacity(e.target.value)}
-        />
-      </div>
+  <div className="form-group">
+    <input
+      type="number"
+      placeholder="Minimum Capacity"
+      value={capacity}
+      onChange={(e)=>setCapacity(e.target.value)}
+      style={{
+        width: '100%',
+        padding: '8px',
+        borderRadius: '4px',
+        border: '1px solid #ccc',
+        height: '38px',
+        boxSizing: 'border-box'
+      }}
+    />
+  </div>
 
-      <button type="submit">View Available Rooms</button>
-    </form>
+  <button 
+    type="submit"
+    style={{
+      padding: '8px 16px',
+      height: '38px',
+      borderRadius: '4px',
+      border: 'none',
+      backgroundColor: '#007bff',
+      color: 'white',
+      cursor: 'pointer'
+    }}
+  >
+    View Available Rooms
+  </button>
+</form>
   );
 }
 

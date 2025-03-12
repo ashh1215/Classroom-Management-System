@@ -4,6 +4,7 @@ import Admin from './components/admin';
 import Dashboard from './components/dashboard';
 import Register from './components/register';
 import ProtectedRoute from './components/protectedRoutes';
+import Profile from './components/profile';
 
 // import './App.css';
 
@@ -14,11 +15,16 @@ function App() {
       <Routes>
         <Route path="/" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/profile" element={<Profile />} />
         <Route path="/dashboard" element={
         <ProtectedRoute>
           <Dashboard />
         </ProtectedRoute>} />
         <Route path="/admin" element={
+          <ProtectedRoute allowedRoles={['admin']}>
+          <Admin />
+        </ProtectedRoute>}/>
+        <Route path="/adminControls" element={
           <ProtectedRoute allowedRoles={['admin']}>
           <Admin />
         </ProtectedRoute>}/>

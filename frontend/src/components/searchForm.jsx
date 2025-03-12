@@ -29,6 +29,7 @@ function SearchForm({ onSearch }) {
     value={date}
     onChange={(e)=>setDate(e.target.value)}
     required
+    min={new Date().toISOString().split("T")[0]}
     style={{
       width: '100%',
         padding: '8px',
@@ -84,20 +85,29 @@ function SearchForm({ onSearch }) {
     />
   </div>
 
+  <div className="form-group">
   <button 
+    className='search-room-button'
     type="submit"
     style={{
-      padding: '8px 16px',
+      padding: '8px',
       height: '38px',
+      lineHeight: '38px',
       borderRadius: '4px',
       border: 'none',
       backgroundColor: '#007bff',
       color: 'white',
-      cursor: 'pointer'
+      cursor: 'pointer',
+      boxSizing: 'border-box',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      whiteSpace: 'nowrap'
     }}
   >
     View Available Rooms
   </button>
+  </div>
 </form>
   );
 }

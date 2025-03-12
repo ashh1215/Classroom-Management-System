@@ -17,18 +17,16 @@
   .form-group {
     flex: 1;
   }
-  .search-form .form-group:last-child {
-    flex: 0;
-}
+  
   .form-group input,
-  .form-group select{
+  .form-group select {
     width: 100%;
     padding: 8px;
     border: 1px solid #ddd;
     border-radius: 4px;
   }
   
-  .container button:not(.search-room-button) {
+  button {
     padding: 8px 16px;
     background-color: #007bff;
     color: white;
@@ -39,10 +37,8 @@
   
   button:hover {
     background-color: #0056b3;
-  } 
-
-
-
+  }
+  
   .rooms-container {
     margin-top: 20px;
   }

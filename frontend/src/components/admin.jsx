@@ -1,7 +1,8 @@
 import { useState,useRef } from 'react';
 import SearchForm from './SearchForm';
 import RoomsList from './RoomsList';
-import './dashboard.css';
+import AdminNavbar from './adminNavBar';
+import './admin.css';
 
 function Dashboard() {
   const [availableRooms, setAvailableRooms] = useState([]);
@@ -32,38 +33,61 @@ function Dashboard() {
   const handleBookRoom = async () => {
     if (!selectedRoom) return;
     
+    const token = localStorage.getItem('token');
+    
+    if (!token) {
+      alert('Authentication token not found. Please log in again.');
+      return;
+    }
+    
     try {
       const response = await fetch('http://localhost:5000/api/bookings', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({
           roomId: selectedRoom.room_id,
           date: searchCriteria.date,
-          timeSlot: searchCriteria.timeSlot,
-          // userId would come from auth context in a real app
-          userId: 1
+          timeSlot: searchCriteria.timeSlot
         }),
       });
-      const data=await response.json();
-      if (response.ok) {
-        alert(data.message);
-        setSelectedRoom(null);
-        handleSearch(searchCriteria); // Refresh available rooms
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Server response:', errorText);
+        alert('Booking failed: ' + (errorText || 'Unknown error'));
+        return;
       }
-      setTimeout(()=>{
-        containerRef.current?.scrollIntoView({behavior: 'smooth'});
-      },100); 
-
+      
+      const data = await response.json();
+      alert(data.message);
+      
+      // Reset everything to initial state
+      setSelectedRoom(null);
+      setAvailableRooms([]);
+      setSearchCriteria({
+        date: '',
+        timeSlot: '',
+        capacity: ''
+      });
+      
+      // Scroll to the top of the page
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      
+      // If you want to reset the form fields directly, you might need to use refs
+      // or implement a resetForm function in your SearchForm component
+      
     } catch (error) {
-      console.error('Error booking room:', error);
+      console.error('Error details:', error);
+      alert('Error booking room: ' + error.message);
     }
   };
-
   return (
+    <>
+    <AdminNavbar></AdminNavbar>
     <div ref={containerRef} className="container" >
-      <h1>Classroom Booking System</h1>
       <SearchForm onSearch={handleSearch} />
       <RoomsList 
         rooms={availableRooms}
@@ -73,6 +97,7 @@ function Dashboard() {
         onBookRoom={handleBookRoom}
       />
     </div>
+    </>
   );
 }
 

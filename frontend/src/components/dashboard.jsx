@@ -76,9 +76,6 @@ function Dashboard() {
       // Scroll to the top of the page
       window.scrollTo({ top: 0, behavior: 'smooth' });
       
-      // If you want to reset the form fields directly, you might need to use refs
-      // or implement a resetForm function in your SearchForm component
-      
     } catch (error) {
       console.error('Error details:', error);
       alert('Error booking room: ' + error.message);

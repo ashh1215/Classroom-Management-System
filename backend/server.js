@@ -169,9 +169,74 @@ app.get('/api/user/me', authenticateToken, async (req, res) => {
       
       res.json(users[0]);
     } catch (error) {
+      console.error('Error fetching user profile:', error);
       res.status(500).json({ error: error.message });
     }
-  });
+});
+
+//User details edit
+app.put('/api/user/me', authenticateToken, async (req, res) => {
+    try {
+        const { name, email, department_id, password } = req.body;
+        const userId = req.user.id;
+
+        // Build query dynamically based on what's being updated
+        let updateFields = [];
+        let queryParams = [];
+
+        if (name) {
+            updateFields.push('name = ?');
+            queryParams.push(name);
+        }
+
+        if (email) {
+            // Check if email is already in use by another user
+            const [existingUsers] = await db.query(
+                'SELECT user_id FROM users WHERE email = ? AND user_id != ?',
+                [email, userId]
+            );
+
+            if (existingUsers.length > 0) {
+                return res.status(400).json({ error: 'Email is already in use by another user' });
+            }
+
+            updateFields.push('email = ?');
+            queryParams.push(email);
+        }
+
+        if (department_id !== undefined) {
+            updateFields.push('department_id = ?');
+            queryParams.push(department_id === '' ? null : department_id);
+        }
+
+        if (password) {
+            const hashedPassword = await bcrypt.hash(password, 10);
+            updateFields.push('password = ?');
+            queryParams.push(hashedPassword);
+        }
+
+        // If nothing to update
+        if (updateFields.length === 0) {
+            return res.status(400).json({ error: 'No fields provided for update' });
+        }
+
+        // Complete the query and add the user ID
+        const query = `UPDATE users SET ${updateFields.join(', ')} WHERE user_id = ?`;
+        queryParams.push(userId);
+
+        const [result] = await db.query(query, queryParams);
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+
+        res.json({ message: 'Profile updated successfully' });
+    } catch (error) {
+        console.error('Error updating user profile:', error);
+        res.status(500).json({ error: 'Error updating user profile' });
+    }
+});
+
 
 //New User Signup
 app.post('/api/auth/register', async (req, res) => {
@@ -197,23 +262,118 @@ app.post('/api/auth/register', async (req, res) => {
     }
 });
 
+//Change password
+app.post('/api/user/change-password', authenticateToken, async (req, res) => {
+    try {
+        const { currentPassword, newPassword } = req.body;
+        const userId = req.user.id;
+
+        // Validate inputs
+        if (!currentPassword || !newPassword) {
+            return res.status(400).json({ error: 'Current password and new password are required' });
+        }
+
+        // Get user's current password
+        const [users] = await db.query('SELECT password FROM users WHERE user_id = ?', [userId]);
+        
+        if (users.length === 0) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+
+        // Verify current password
+        const isMatch = await bcrypt.compare(currentPassword, users[0].password);
+        if (!isMatch) {
+            return res.status(401).json({ error: 'Current password is incorrect' });
+        }
+
+        // Hash new password
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+        // Update password
+        const [result] = await db.query(
+            'UPDATE users SET password = ? WHERE user_id = ?',
+            [hashedPassword, userId]
+        );
+
+        if (result.affectedRows === 0) {
+            return res.status(500).json({ error: 'Failed to update password' });
+        }
+
+        res.json({ message: 'Password changed successfully' });
+    } catch (error) {
+        console.error('Error changing password:', error);
+        res.status(500).json({ error: 'Error changing password' });
+    }
+});
 
 // Protected route for regular users to see their bookings
 app.get('/api/user/bookings', authenticateToken, async (req, res) => {
     try {
-      const [bookings] = await db.query(
-        `SELECT b.*, r.room_name 
-         FROM bookings b 
-         JOIN rooms r ON b.room_id = r.room_id 
-         WHERE b.user_id = ?`, 
-        [req.user.id]
-      );
-      res.json(bookings);
+        const [bookings] = await db.query(
+            `SELECT b.booking_id, b.room_id, r.room_name, b.booking_date as date, 
+                    ts.start_time, ts.end_time, 
+                    CASE 
+                        WHEN b.booking_date > CURDATE() THEN 'upcoming'
+                        WHEN b.booking_date = CURDATE() THEN 'today'
+                        ELSE 'past'
+                    END as status
+            FROM bookings b 
+            JOIN rooms r ON b.room_id = r.room_id
+            JOIN time_slots ts ON b.slot_id = ts.slot_id 
+            WHERE b.user_id = ? 
+            ORDER BY b.booking_date DESC, ts.start_time ASC`, 
+            [req.user.id]
+        );
+        res.json(bookings);
     } catch (error) {
-      res.status(500).json({ error: error.message });
+        console.error('Error fetching user bookings:', error);
+        res.status(500).json({ error: error.message });
     }
-  });
-  
+});
+
+//Delete booking
+app.delete('/api/bookings/:id', authenticateToken, async (req, res) => {
+    try {
+        const bookingId = req.params.id;
+        const userId = req.user.id;
+
+        // First check if booking exists and belongs to the user
+        const [bookings] = await db.query(
+            'SELECT * FROM bookings WHERE booking_id = ? AND user_id = ?',
+            [bookingId, userId]
+        );
+
+        if (bookings.length === 0) {
+            return res.status(404).json({ error: 'Booking not found or not authorized to delete' });
+        }
+
+        // Check if booking is in the future (can only delete future bookings)
+        const booking = bookings[0];
+        const bookingDate = new Date(booking.booking_date);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0); // Set to start of day
+
+        if (bookingDate < today) {
+            return res.status(400).json({ error: 'Cannot delete past bookings' });
+        }
+
+        // Delete the booking
+        const [result] = await db.query(
+            'DELETE FROM bookings WHERE booking_id = ?',
+            [bookingId]
+        );
+
+        if (result.affectedRows === 0) {
+            return res.status(500).json({ error: 'Failed to delete booking' });
+        }
+
+        res.json({ message: 'Booking deleted successfully' });
+    } catch (error) {
+        console.error('Error deleting booking:', error);
+        res.status(500).json({ error: 'Error deleting booking' });
+    }
+});
+
   // Protected route for admins only to see all users
   app.get('/api/admin/users', authenticateToken, requireAdmin, async (req, res) => {
     try {

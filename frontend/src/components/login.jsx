@@ -29,12 +29,7 @@ function Login(){
                 localStorage.setItem('role', data.user.role);
                 localStorage.setItem('user', JSON.stringify(data.user));
                 
-                // Check role and navigate
-                if (data.user.role === 'admin') {
-                    navigate('/admin');
-                } else {
-                    navigate('/dashboard');
-                }
+                navigate('/dashboard');
             } else {
                 alert(data.error || 'Login failed');
             }

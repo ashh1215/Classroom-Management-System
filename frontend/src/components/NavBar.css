@@ -55,11 +55,3 @@
   .logout-button:hover {
     background-color: #c9302c;
   }
-  
-  /* Fix body overflow issues */
-  /* html, body {
-    width: 100%;
-    max-width: 100vw;
-    overflow-x: hidden;
-  } */
-  

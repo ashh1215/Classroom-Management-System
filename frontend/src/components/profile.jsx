@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Navbar from './NavBar';
+import AdminNavbar from './adminNavBar';
 import './Profile.css';
 
 const Profile = () => {
@@ -22,7 +23,6 @@ const Profile = () => {
   const [message, setMessage] = useState({ text: '', type: '' });
 
   useEffect(() => {
-    // Fetch user data when component mounts
     fetchUserData();
   }, []);
 
@@ -30,7 +30,6 @@ const Profile = () => {
     try {
       const token = localStorage.getItem('token');
       
-      // Fetch user profile using your existing route
       const userResponse = await fetch('http://localhost:5000/api/user/me', {
         headers: {
           'Authorization': `Bearer ${token}`
@@ -39,7 +38,6 @@ const Profile = () => {
       const userData = await userResponse.json();
       setUserInfo(userData);
       
-      // Fetch user bookings using your existing route
       const bookingsResponse = await fetch('http://localhost:5000/api/user/bookings', {
         headers: {
           'Authorization': `Bearer ${token}`
@@ -73,7 +71,6 @@ const Profile = () => {
   };
 
   const toggleEdit = async () => {
-    // If currently editing, save changes
     if (isEditing) {
       try {
         const token = localStorage.getItem('token');
@@ -206,7 +203,7 @@ const Profile = () => {
   if (loading) {
     return (
       <>
-        <Navbar />
+        {userInfo.role === 'admin' ? <AdminNavbar /> : <Navbar />}
         <div className="profile-page">
           <div className="loading">Loading...</div>
         </div>
@@ -216,7 +213,7 @@ const Profile = () => {
 
   return (
     <>
-      <Navbar />
+      {userInfo.role === 'admin' ? <AdminNavbar /> : <Navbar />}
       <div className="profile-page">
         {message.text && (
           <div className={`message ${message.type}`}>
@@ -230,7 +227,7 @@ const Profile = () => {
             <button 
               className="change-password-button" 
               onClick={openPasswordModal}
-              style={{display: 'block'}} // Make sure button is displayed
+              style={{display: 'block'}}
             >
               Change Password
             </button>
@@ -346,7 +343,6 @@ const Profile = () => {
           )}
         </div>
         
-        {/* Change Password Modal */}
         {showPasswordModal && (
           <div className="modal-backdrop">
             <div className="modal">

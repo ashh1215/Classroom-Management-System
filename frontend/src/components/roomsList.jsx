@@ -34,11 +34,24 @@ function RoomsList({ rooms, onRoomSelect, selectedRoom, searchCriteria, onBookRo
               <span>Room: {room.room_name}</span>
               <span>Capacity: {room.capacity}</span>
             </div>
-            <input
+            {/* <input
               type="checkbox"
               checked={selectedRoom?.room_id === room.room_id}
               onChange={() => onRoomSelect(room)}
-            />
+            /> */}
+            <button 
+              className={selectedRoom?.room_id === room.room_id ? "chosen-button" : "choose-button"} 
+              onClick={()=>onRoomSelect(room)}
+              style={{
+                  backgroundColor: selectedRoom?.room_id === room.room_id ? '#cccccc' : '#007bff',
+                  color: selectedRoom?.room_id === room.room_id ? '#333333' : 'white',
+                  cursor: selectedRoom?.room_id === room.room_id ? 'default' : 'pointer',
+                  padding: '8px 16px',
+                  border: 'none',
+                  borderRadius: '4px'
+              }}>
+            {selectedRoom?.room_id === room.room_id ? "Chosen" : "Choose"}
+            </button>
           </div>
         ))}
       </div>

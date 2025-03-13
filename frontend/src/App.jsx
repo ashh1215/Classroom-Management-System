@@ -1,12 +1,10 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Login from './components/login';
-import Admin from './components/admin';
+import AdminControls from './components/adminControls';
 import Dashboard from './components/dashboard';
 import Register from './components/register';
 import ProtectedRoute from './components/protectedRoutes';
 import Profile from './components/profile';
-
-// import './App.css';
 
 function App() {
 
@@ -20,13 +18,9 @@ function App() {
         <ProtectedRoute>
           <Dashboard />
         </ProtectedRoute>} />
-        <Route path="/admin" element={
-          <ProtectedRoute allowedRoles={['admin']}>
-          <Admin />
-        </ProtectedRoute>}/>
         <Route path="/adminControls" element={
           <ProtectedRoute allowedRoles={['admin']}>
-          <Admin />
+          <AdminControls />
         </ProtectedRoute>}/>
         <Route path="*" element={<Navigate to="/" replace/>} />
       </Routes>

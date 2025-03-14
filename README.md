@@ -17,6 +17,13 @@ A web-based system for booking classrooms, featuring user authentication, an adm
 
 ---
 
+## 🗄️ Database Setup
+
+Ensure you have **MySQL installed** and running on your system.
+Create the database by running the provided `setup.sql` file
+
+---
+
 ## Frontend
 
 ### Installation & Setup

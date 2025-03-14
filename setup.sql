@@ -1,3 +1,7 @@
+create database classroomManagement;
+use classroomManagement;
+
+
 -- Time slots lookup table
 CREATE TABLE time_slots (
     slot_id INT PRIMARY KEY,

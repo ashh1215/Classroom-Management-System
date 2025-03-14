@@ -4,6 +4,11 @@ const mysql = require("mysql2/promise");
 const cors = require("cors");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const {
+  sendAccountCreationEmail,
+  sendBookingConfirmationEmail,
+  sendBookingCancellationEmail,
+} = require("./emailUtils");
 
 const app = express();
 app.use(cors());
@@ -144,6 +149,21 @@ app.post("/api/bookings", authenticateToken, async (req, res) => {
 
     const query = `INSERT INTO bookings (room_id, user_id, booking_date, slot_id) VALUES (?,?,?,?)`;
     const [rows] = await db.query(query, [roomId, userId, date, timeSlot]);
+
+    const bookingId = rows.insertId;
+    const [bookings] = await db.query('SELECT * FROM bookings WHERE booking_id = ?', [bookingId]);
+    const [rooms] = await db.query('SELECT * FROM rooms WHERE room_id = ?', [roomId]);
+    const [timeSlots] = await db.query('SELECT * FROM time_slots WHERE slot_id = ?', [timeSlot]);
+    const [users] = await db.query('SELECT * FROM users WHERE user_id = ?', [userId]);
+    
+    // Send booking confirmation email
+    sendBookingConfirmationEmail(
+        users[0], 
+        bookings[0], 
+        rooms[0], 
+        timeSlots[0]
+    );
+
     console.log("inserted");
     res.status(201).json({ message: "Booking successful" });
   } catch (error) {
@@ -241,6 +261,11 @@ app.put("/api/user/me", authenticateToken, async (req, res) => {
 app.post("/api/auth/register", async (req, res) => {
   try {
     const { name, email, password, department_id } = req.body;
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        return res.status(400).json({ error: "Invalid email format" });
+    }
+    
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const [result] = await db.query(
@@ -249,18 +274,22 @@ app.post("/api/auth/register", async (req, res) => {
     );
 
     const [newUser] = await db.query(
-      "SELECT user_id FROM users WHERE email = ?",
+      "SELECT * FROM users WHERE email = ?",
       [email]
     );
-
+    console.log(newUser[0]);
+    sendAccountCreationEmail(newUser[0]);
     res.status(201).json({
       message: `Registration successful! Your User ID is: ${newUser[0].user_id}`,
       user_id: newUser[0].user_id,
     });
   } catch (error) {
     console.error("Error registering user:", error);
-    res.status(500).json({ error: "Registration failed" });
-  }
+    res.status(500).json({
+        error: String(error).includes('users.email') 
+            ? "Account with email ID already exists" 
+            : "Registration failed"
+    });  }
 });
 
 //Change password
@@ -357,7 +386,12 @@ app.delete("/api/bookings/:id", authenticateToken, async (req, res) => {
 
     // Check if booking is in the future (can only delete future bookings)
     const booking = bookings[0];
+
+    const [rooms] = await db.query('SELECT * FROM rooms WHERE room_id = ?', [booking.room_id]);
+    const [timeSlots] = await db.query('SELECT * FROM time_slots WHERE slot_id = ?', [booking.slot_id]);
+    const [users] = await db.query('SELECT * FROM users WHERE user_id = ?', [userId]);
     const bookingDate = new Date(booking.booking_date);
+
     const today = new Date();
     today.setHours(0, 0, 0, 0); // Set to start of day
 
@@ -374,6 +408,13 @@ app.delete("/api/bookings/:id", authenticateToken, async (req, res) => {
     if (result.affectedRows === 0) {
       return res.status(500).json({ error: "Failed to delete booking" });
     }
+
+    sendBookingCancellationEmail(
+        users[0], 
+        booking, 
+        rooms[0], 
+        timeSlots[0]
+    );
 
     res.json({ message: "Booking deleted successfully" });
   } catch (error) {

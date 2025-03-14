@@ -12,8 +12,18 @@ function Register() {
     });
     const navigate = useNavigate();
 
+    const isValidEmail = (email) => {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/; // Basic email pattern
+        return emailRegex.test(email);
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
+        
+        if (!isValidEmail(formData.email)) {
+            alert("Please enter a valid email address!");
+            return;
+        }
         
         if(formData.password !== formData.confirmPassword) {
             alert("Passwords don't match!");
@@ -41,11 +51,11 @@ function Register() {
                 alert('Registration successful!');
                 navigate('/');  // redirect to login
             } else {
-                alert(data.error || 'Registration failed');
+                alert(data.error);
             }
         } catch (error) {
             console.error('Registration error:', error);
-            alert('Failed to register');
+            alert(`${error}`);
         }
     };
 

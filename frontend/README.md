@@ -28,7 +28,7 @@ frontend/
 │── public/             # Static files (index.html, images)
 │── package.json        # Dependencies and scripts
 │── README.md           # Project documentation
-
+```
 
 ## 🔧 Installation & Setup
 1. Clone the repository:

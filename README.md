@@ -10,7 +10,7 @@ A web-based system for booking classrooms, featuring user authentication, an adm
 - Admin panel for managing rooms, bookings, and users
 
 ## Technologies Used
-- **Frontend:** React, CSS,
+- **Frontend:** React, CSS
 - **Backend:** Node.js, Express, MySQL
 - **Authentication:** JWT-based authentication
 - **Email Notifications:** Nodemailer (with App Passwords for Gmail)

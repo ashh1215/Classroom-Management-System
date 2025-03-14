@@ -45,15 +45,6 @@ npm install
 node server.js
 ```
 
-### API Endpoints
-| Method | Endpoint          | Description |
-|--------|------------------|-------------|
-| POST   | /auth/register   | Register a new user |
-| POST   | /auth/login      | User login |
-| GET    | /rooms           | Get available rooms |
-| POST   | /bookings        | Create a new booking |
-| DELETE | /bookings/:id    | Cancel a booking |
-
 ### Email Notifications
 - Uses **Nodemailer** for sending emails
 - App Passwords are used for authentication
